@@ -3,12 +3,16 @@ package com.udacity.sandwichclub;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.udacity.sandwichclub.model.Sandwich;
 import com.udacity.sandwichclub.utils.JsonUtils;
+
+import java.util.List;
 
 public class DetailActivity extends AppCompatActivity {
 
@@ -22,12 +26,16 @@ public class DetailActivity extends AppCompatActivity {
 
         ImageView ingredientsIv = findViewById(R.id.image_iv);
 
+
         Intent intent = getIntent();
         if (intent == null) {
             closeOnError();
         }
 
-        int position = intent.getIntExtra(EXTRA_POSITION, DEFAULT_POSITION);
+        int position = 0;
+        if (intent != null) {
+            position = intent.getIntExtra(EXTRA_POSITION, DEFAULT_POSITION);
+        }
         if (position == DEFAULT_POSITION) {
             // EXTRA_POSITION not found in intent
             closeOnError();
@@ -43,12 +51,14 @@ public class DetailActivity extends AppCompatActivity {
             return;
         }
 
-        populateUI();
+        populateUI(sandwich);
         Picasso.with(this)
                 .load(sandwich.getImage())
                 .into(ingredientsIv);
 
         setTitle(sandwich.getMainName());
+
+
     }
 
     private void closeOnError() {
@@ -56,7 +66,40 @@ public class DetailActivity extends AppCompatActivity {
         Toast.makeText(this, R.string.detail_error_message, Toast.LENGTH_SHORT).show();
     }
 
-    private void populateUI() {
+    private void populateUI(Sandwich sandwich) {
+        TextView originTv = findViewById(R.id.origin_tv);
+        TextView descriptionTv = findViewById(R.id.description_tv);
+        TextView knownAsTv = findViewById(R.id.also_known_tv);
+        TextView ingredientsTv = findViewById(R.id.ingredients_tv);
 
+        if (!sandwich.getPlaceOfOrigin().isEmpty())
+            originTv.setText(sandwich.getPlaceOfOrigin());
+        else
+            findViewById(R.id.linear_place_origin).setVisibility(View.GONE);
+
+        if (sandwich.getDescription().isEmpty()){
+            findViewById(R.id.linear_description).setVisibility(View.GONE);
+        }else
+            descriptionTv.setText(sandwich.getDescription());
+
+        if (sandwich.getAlsoKnownAs().isEmpty()) {//If the list is empty I hyde the information
+            findViewById(R.id.linear_also_know).setVisibility(View.GONE);
+        } else {
+            knownAsTv.setText(textOfList(sandwich.getAlsoKnownAs()));
+        }
+        ingredientsTv.setText(textOfList(sandwich.getIngredients()));
+
+    }
+
+    private String textOfList(List<String> list) {
+        StringBuilder builder = new StringBuilder();
+        for (String s : list) {
+            builder.append(s).append(", ");
+        }
+        if (builder.length() > 0)
+            builder.delete(builder.length() - 2, builder.length());//With this I delete the last comma
+
+
+        return builder.toString();
     }
 }
